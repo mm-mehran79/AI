@@ -32,8 +32,7 @@ class Genetic:
         Outputs:
         - initial population
         """
-
-        pass
+        return np.random.randint(2,size=(n,k))
 
     def objective_function(self, chromosome: np.ndarray, S: np.ndarray) -> int:
         """
@@ -48,8 +47,7 @@ class Genetic:
         Outputs:
         - sum of the chromosome
         """
-
-        pass
+        return np.sum(chromosome * S)
 
     def is_feasible(self, chromosome: np.ndarray, S: np.ndarray, T: int) -> bool:
         """
@@ -63,8 +61,7 @@ class Genetic:
         Outputs:
         - True (1) if the sum of the chromosome is equal or less to the target value, False (0) otherwise
         """
-
-        pass
+        return self.objective_function(chromosome, S) <= T
 
     def cost_function(self, chromosome: np.ndarray, S: np.ndarray, T: int) -> int:
         """
@@ -82,8 +79,8 @@ class Genetic:
         Outputs:
         - cost of the chromosome
         """
-
-        pass
+        sum_of_the_chromosome = self.objective_function(chromosome, S)
+        return (T - sum_of_the_chromosome) if self.is_feasible(chromosome, S, T) else sum_of_the_chromosome
 
     def selection(self, population: np.ndarray, S: np.ndarray, T: int) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -104,8 +101,10 @@ class Genetic:
         Outputs:
         - two best chromosomes with the lowest cost out of four selected chromosomes
         """
-
-        pass
+        random_index = np.random.randint(population.shape[0],size=4)
+        c1 = population[random_index[0]] if self.cost_function(population[random_index[0]], S, T) < self.cost_function(population[random_index[1]], S, T) else population[random_index[1]]
+        c2 = population[random_index[2]] if self.cost_function(population[random_index[2]], S, T) < self.cost_function(population[random_index[3]], S, T) else population[random_index[3]]
+        return (c1, c2)
 
     def crossover(self, parent1: np.ndarray, parent2: np.ndarray, S: np.ndarray, prob: float = 0.5) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -128,8 +127,11 @@ class Genetic:
         Outputs:
         - two children chromosomes
         """
-
-        pass
+        R = np.random.rand()
+        if R >= prob :
+            return (parent1,parent2)
+        R = np.random.randint(parent1.size)
+        return (np.concatenate((parent1[:R],parent2[R::])), np.concatenate((parent2[:R],parent1[R::])))
 
     def mutation(self, child1: np.ndarray, child2: np.ndarray, prob: float = 0.01) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -152,8 +154,15 @@ class Genetic:
         Outputs:
         - two mutated children chromosomes
         """
-
-        pass
+        R = np.random.rand()
+        if R >= prob :
+            return (child1, child2)
+        R = np.random.randint(child1.size - 1)
+        child1 = np.copy(child1)
+        child2 = np.copy(child2)
+        child1[R] = 0 if child1[R] == 1 else 1
+        child2[R] = 0 if child2[R] == 1 else 1
+        return (child1,child2)
 
     def run_algorithm(self, S: np.ndarray, T: int, crossover_probability: float = 0.5, mutation_probability: float = 0.1, population_size: int = 100, num_generations: int = 100):
         """
@@ -190,13 +199,46 @@ class Genetic:
         best_solution = None
         records = []
 
-        # YOUR CODE HERE
+        initial_population = self.generate_initial_population(population_size, S.size)
 
         for i in tqdm(range(num_generations)):
+            generation_population = []
+            while population_size > len(generation_population):
+                bestCCost = np.inf
+                bestCSol = []
 
-            # YOUR CODE HERE
-            pass
-
+                bestC1, bestC2 = self.selection(initial_population, S, T)
+                child1, child2 = self.crossover(bestC1, bestC2, S, crossover_probability)
+                mchild1, mchild2 = self.mutation(child1, child2, mutation_probability)
+                mchild1cost = self.cost_function(mchild1, S, T)
+                mchild2cost = self.cost_function(mchild2, S, T)
+                bestC1cost = self.cost_function(bestC1, S, T)
+                bestC2cost = self.cost_function(bestC2, S, T)
+                #if  mchild1cost < bestC1cost and mchild1cost < bestC2cost and mchild2cost < bestC1cost and mchild2cost < bestC2cost :
+                if mchild1cost + mchild2cost < bestC1cost + bestC2cost :
+                    #generation_population = np.append((generation_population,[mchild1, mchild2]), axis=0)
+                    generation_population.append(mchild1)
+                    generation_population.append(mchild2)
+                    if mchild1cost < bestCCost :
+                        bestCCost = mchild1cost
+                        bestCSol = mchild1
+                    if mchild2cost < bestCCost :
+                        bestCCost = mchild2cost
+                        bestCSol = mchild2
+                else :
+                    generation_population.append(bestC1)
+                    generation_population.append(bestC2)
+                    if bestC1cost < bestCCost:
+                        bestCCost = bestC1cost
+                        bestCSol = bestC1
+                    if bestC2cost < bestCCost:
+                        bestCCost = bestC2cost
+                        bestCSol = bestC2
+            if bestCCost < best_cost:
+                best_cost = bestCCost
+                best_solution = bestCSol
+            #records = np.append((records,[bestCCost, bestCSol]))
+            initial_population = np.copy(generation_population)
             records.append({'iteration': i, 'best_cost': best_cost,
                            'best_solution': best_solution})  # DO NOT REMOVE THIS LINE
 

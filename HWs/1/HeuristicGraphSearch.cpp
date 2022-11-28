@@ -1,7 +1,7 @@
 #include <iostream>
 #include <bits/stdc++.h>
 #include <limits.h>
-#define ushort unsigned short
+#define ushort unsigned int
 #define uint unsigned int
 #define myPair pair<unsigned int,ushort*>
 

@@ -28,8 +28,7 @@ class SimulatedAnnealing:
         Outputs:
         - initial state
         """
-
-        pass
+        return np.random.randint(2,size=(n))
 
     def is_feasible(self, state: np.ndarray, S: np.ndarray, T: int) -> bool:
         """
@@ -43,8 +42,8 @@ class SimulatedAnnealing:
         Outputs:
         - True (1) if the sum of the state is equal or less to the target value, False (0) otherwise
         """
-
-        pass
+        return np.sum(S * state) <= T
+        
 
     def neighbor_state_generator(self, state: np.ndarray, S: np.ndarray, T: int, prob: float = 0.5) -> np.ndarray:
         """
@@ -66,8 +65,19 @@ class SimulatedAnnealing:
         Outputs:
         - neighbor state
         """
+        s = np.copy(state)
+        R = np.random.randint(state.shape[0])
+        s[R] = 1 if S[R] == 1 else 0
+        R = np.random.rand()
+        if(R <= prob):
+            R = np.random.randint(state.shape[0])
+            s[R] = 1 if S[R] == 1 else 0
+        while not self.is_feasible(s,S,T):
+            R = np.random.randint(state.shape[0])
+            s[R] = 1 if S[R] == 1 else 0
+        return s
 
-        pass
+
 
     def cost_function(self, state: np.ndarray, S: np.ndarray, T: int) -> int:
         """
