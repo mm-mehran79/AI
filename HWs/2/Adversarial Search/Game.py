@@ -14,10 +14,11 @@ SQUARESIZE = 100
 
 
 class Game:
-    def __init__(self, player1, player2, graphics=True):
+    def __init__(self, player1, player2, graphics=False):
         self.player1 = player1
         self.player2 = player2
         self.board = np.zeros((ROWS, COLS))
+        self.graphics = graphics
 
         # GUI
         if graphics:
@@ -48,7 +49,8 @@ class Game:
         turn = random.randint(0, 1)
         print('player1 is red. player2 is yellow.')
         print(f'player{turn + 1} goes first.')
-        self.draw_board()
+        if self.graphics:
+            self.draw_board()
 
         while True:
             print(f'player{turn + 1} move:')
@@ -58,7 +60,8 @@ class Game:
             elif turn == 1:
                 col = self.player2.play(self.board)
                 BoardUtility.make_move(self.board, col, 2)
-            self.draw_board()
+            if self.graphics:
+                self.draw_board()
 
             if BoardUtility.has_player_won(self.board, 1):
                 print("PLAYER 1 WINS!")

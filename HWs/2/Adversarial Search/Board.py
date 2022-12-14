@@ -82,13 +82,63 @@ class BoardUtility:
         """
         score = 0
         if BoardUtility.has_player_won(game_board, piece):
-            return 100_000_000_000  # player has won the game give very large score
+            return 100  # player has won the game give very large score
         if BoardUtility.has_player_won(game_board, 1 if piece == 2 else 2):
-            return -100_000_000_000  # player has lost the game give very large negative score
+            return -100  # player has lost the game give very large negative score
 
-        # todo score the game board based on a heuristic.
+        nextLocations = BoardUtility.get_valid_locations(game_board)
+        for col in nextLocations:
+            corresponding_row = BoardUtility.get_next_open_row(game_board, col)
+            game_board[corresponding_row][col] = piece
+            if BoardUtility.has_player_won(game_board, piece ): 
+                game_board[corresponding_row][col] = 0
+                return 60
+            game_board[corresponding_row][col] = 0
+            
+        for col in nextLocations:
+            corresponding_row = BoardUtility.get_next_open_row(game_board, col)
+            game_board[corresponding_row][col] = 1 if piece == 2 else 2
+            if BoardUtility.has_player_won(game_board, 1 if piece == 2 else 2):
+                return -60
+            game_board[corresponding_row][col] = 0
+        
 
-        return score
+        for col in range(COLS - 1):
+            for row in range(ROWS - 1, 0, -1):
+                if game_board[row][col] == 1:
+                    if game_board[row][col+1] == 1:
+                        score += 1
+                    if game_board[row - 1][col + 1] == 1:
+                        score += 1
+                    if game_board[row - 1][col] == 1:
+                        score += 1
+                    elif game_board[row - 1][col] == 0:
+                        break
+                elif game_board[row][col] == 2:
+                    if game_board[row][col+1] == 2:
+                        score -= 1
+                    if game_board[row - 1][col + 1] == 2:
+                        score -= 1
+                    if game_board[row - 1][col] == 2:
+                        score -= 1
+                    elif game_board[row - 1][col] == 0:
+                        break
+                else :
+                    break
+            if game_board[0][col] == 1:
+                if game_board[0][col + 1] == 1:
+                    score += 1
+            if game_board[0][col] == 2:
+                if game_board[0][col + 1] == 2:
+                    score -= 1
+        for row in range(ROWS - 1, 0, -1):
+            if game_board[row - 1][COLS - 1] == 0:
+                break
+            if game_board[row][COLS - 1] == 1 and game_board[row - 1][COLS - 1] == 1:
+                score += 1
+            elif game_board[row][COLS - 1] == 2 and game_board[row - 1][COLS - 1] == 2:
+                score -= 1
+        return score if piece == 1 else -score
 
     @staticmethod
     def get_valid_locations(game_board):
