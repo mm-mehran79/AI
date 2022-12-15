@@ -1,3 +1,4 @@
 /*.pdf
 /Lectures
 *.exe
+__pycache__/

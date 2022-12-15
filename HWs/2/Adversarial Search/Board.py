@@ -81,27 +81,32 @@ class BoardUtility:
         you can change this function to use a better heuristic for improvement.
         """
         score = 0
+        flag0 = flag1 = 0
         if BoardUtility.has_player_won(game_board, piece):
             return 100  # player has won the game give very large score
         if BoardUtility.has_player_won(game_board, 1 if piece == 2 else 2):
             return -100  # player has lost the game give very large negative score
-
         nextLocations = BoardUtility.get_valid_locations(game_board)
         for col in nextLocations:
             corresponding_row = BoardUtility.get_next_open_row(game_board, col)
             game_board[corresponding_row][col] = piece
             if BoardUtility.has_player_won(game_board, piece ): 
                 game_board[corresponding_row][col] = 0
-                return 60
+                score += 60
+                break
             game_board[corresponding_row][col] = 0
+        # else: flag0 = 1
             
         for col in nextLocations:
             corresponding_row = BoardUtility.get_next_open_row(game_board, col)
             game_board[corresponding_row][col] = 1 if piece == 2 else 2
             if BoardUtility.has_player_won(game_board, 1 if piece == 2 else 2):
-                return -60
+                score -= 60
+                break
             game_board[corresponding_row][col] = 0
-        
+        # else: flag1 = 1
+        # if flag0 == 0 or flag1 == 0: 
+        return score
 
         for col in range(COLS - 1):
             for row in range(ROWS - 1, 0, -1):

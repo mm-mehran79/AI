@@ -34,48 +34,49 @@ class MiniMaxPlayer(Player):
         return the next move(columns to play in) of the player based on minimax algorithm.
         """
         # Todo: implement minimax algorithm with alpha beta pruning
-        move = MiniMaxPlayer.MaxPlay(board, self.depth, -101, 101, self.piece)[1]
+        move = MiniMaxPlayer.MaxPlay(np.array(board), self.depth, -101, 101, self.piece, move=True)
         return move
 
     @staticmethod
-    def MaxPlay(board, depth, alpha, beta, piece):
-        value, nextMove = -101, 0
+    def MaxPlay(board, depth, alpha, beta, piece, move = False):
+        value = -101
+        nextMove = 0
         if BoardUtility.is_terminal_state(board) or depth == 0 :
-            return [BoardUtility.score_position(board, piece), nextMove]
+            return BoardUtility.score_position(board, piece)
         else :
             for next_column in BoardUtility.get_valid_locations(board):
                 #if alpha >= beta : break
                 open_row = BoardUtility.get_next_open_row(board, next_column)
-                board[open_row][next_column] = 1 if piece == 2 else 2
-                v = MiniMaxPlayer.MinPlay(board, depth - 1, alpha, beta, piece)[0]
+                board[open_row][next_column] = piece
+                v = MiniMaxPlayer.MinPlay(board, depth - 1, alpha, beta, piece)
                 board[open_row][next_column] = 0
-                if v >= beta:
-                    return [v, next_column]
                 if v > value:
                     nextMove = next_column
                     value = v
-                    alpha = max(alpha, value)
-        return [value, nextMove]
-
+                alpha = max(alpha, value)
+                if beta <= value:
+                    return next_column if move else v
+        return nextMove if move else value
     @staticmethod
-    def MinPlay(board, depth, alpha, beta, piece):
-        value, nextMove = 101, 0
+    def MinPlay(board, depth, alpha, beta, piece, move = False):
+        value = 101
+        nextMove = 0
         if BoardUtility.is_terminal_state(board) or depth == 0 :
-            return [BoardUtility.score_position(board,piece), nextMove]
+            return BoardUtility.score_position(board, piece)
         else :
             for next_column in BoardUtility.get_valid_locations(board):
                 #if alpha >= beta : break
                 open_row = BoardUtility.get_next_open_row(board, next_column)
-                board[open_row][next_column] = 1 if piece==2 else 2
-                v = MiniMaxPlayer.MaxPlay(board, depth - 1, alpha, beta, piece)[0]
+                board[open_row][next_column] = (1 if piece == 2 else 2)
+                v = MiniMaxPlayer.MaxPlay(board, depth - 1, alpha, beta, piece)
                 board[open_row][next_column] = 0
-                if v <= alpha:
-                    return [v, next_column]
                 if v < value:
                     nextMove = next_column
                     value = v
-                    beta = min(beta, value)
-        return [value, nextMove]
+                beta = min(beta, v)
+                if v <= alpha:
+                    return next_column if move else v
+        return nextMove if move else value
 
 
 class MiniMaxProbPlayer(Player):
@@ -92,5 +93,8 @@ class MiniMaxProbPlayer(Player):
         with probability self.prob_stochastic.
         """
         # Todo: implement minimax algorithm with alpha beta pruning
-        move = np.random.choice(BoardUtility.get_valid_locations(board)) if np.random.rand() < self.prob_stochastic else MiniMaxPlayer.MaxPlay(board, self.depth, -101, 101, self.piece)[1]
+        if np.random.rand() < self.prob_stochastic:
+            move =  np.random.choice(BoardUtility.get_valid_locations(board))
+        else :
+            move = MiniMaxPlayer.MaxPlay(board, self.depth, -101, 101, self.piece, move=True)
         return move
